@@ -1,4 +1,4 @@
-require 'pry'
+require 'nokogiri'
 require_relative '../lib/bibliography_entry'
 
 describe BibliographyEntry do
@@ -29,8 +29,25 @@ describe BibliographyEntry do
       it 'returns only unique keywords' do
         xml_obj = File.open('spec/fixtures/entry_object.xml') { |f| Nokogiri::XML(f) }
         bibliography_entry = BibliographyEntry.new(xml_obj)
-        expect(bibliography_entry.keywords).to contain_exactly("crop model", "environmental impact", "environmental impact", "simulation")
+        keywords = ['crop model', 'environmental impact', 'environmental impact', 'simulation']
+        expect(bibliography_entry.keywords).to contain_exactly(*keywords)
       end
+    end
+  end
+
+  describe '#has_tags?' do
+    it 'returns true if the entry contains any of the given tags' do
+      xml_obj = File.open('spec/fixtures/entry_object.xml') { |f| Nokogiri::XML(f) }
+      bibliography_entry = BibliographyEntry.new(xml_obj)
+      keywords = ['crop model', 'simulation', 'not a valid tag']
+      expect(bibliography_entry).to have_tags(keywords)
+    end
+
+    it 'returns false if the entry does not contain any of the given tags' do
+      xml_obj = File.open('spec/fixtures/entry_object.xml') { |f| Nokogiri::XML(f) }
+      bibliography_entry = BibliographyEntry.new(xml_obj)
+      keywords = ['something', 'other than', 'a valid tag']
+      expect(bibliography_entry).not_to have_tags(keywords)
     end
   end
 end
